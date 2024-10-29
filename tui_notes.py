@@ -1,8 +1,8 @@
 '''Note-taking app created using Textual framework'''
 
 from textual.app import App
-from textual.widgets import Header, Footer, Button, Label
-from textual.containers import Grid
+from textual.widgets import Header, Footer, Button, Label, DataTable, Static
+from textual.containers import Grid, Horizontal, Vertical
 from textual.screen import Screen
 
 
@@ -10,11 +10,30 @@ class NotesApp(App):
     '''A Textual app for note-taking'''
 
     CSS_PATH = "notes.tcss"
-    BINDINGS = [("d", "toggle_dark", "Toggle dark mode"),
-                ("q", "request_quit", "Quit"), ]
+    BINDINGS = [("t", "toggle_dark", "Toggle dark mode"),
+                ("q", "request_quit", "Quit"),
+                ("a", "add", "Add New"),
+                ("d", "delete", "Delete"),
+                ("c", "clear_all", "Clear All")]
 
     def compose(self):
         yield Header()
+
+        notes = DataTable(classes="notes")
+        notes.focus()
+        notes.add_columns("Subject", "Text")
+        notes.cursor_type = "row"
+        notes.zebra_stripes = True
+
+        button_panel = Vertical(
+            Button("Add", variant="success", id="add"),
+            Button("Delete", variant="warning", id="delete"),
+            Static(classes="separator"),
+            Button("Clear All", variant="error", id="clear"),
+            classes="button-panel"
+        )
+
+        yield Horizontal(notes, button_panel)
         yield Footer()
 
     def on_mount(self):
