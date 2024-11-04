@@ -15,6 +15,10 @@ class NotesApp(App):
                 ("a", "add", "Add New"),
                 ("d", "delete", "Delete"),
                 ("c", "clear_all", "Clear All")]
+    
+    def __init__(self, db):
+        super().__init__()
+        self.db = db
 
     def compose(self):
         yield Header()
@@ -41,6 +45,13 @@ class NotesApp(App):
 
         self.title = "Textual Notes"
         self.sub_title = "A Note Taking App With Textual & Python"
+        self._load_notes()
+
+    def _load_notes(self):
+        notes_list = self.query_one(DataTable)
+        for data in self.db.get_all_notes():
+            note_id, *note = data
+            notes_list.add_row(*note, key=note_id)
 
     def action_toggle_dark(self):
         self.dark = not self.dark
