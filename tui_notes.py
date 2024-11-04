@@ -1,7 +1,7 @@
 '''Note-taking app created using Textual framework'''
 
-from textual.app import App
-from textual.widgets import Header, Footer, Button, Label, DataTable, Static
+from textual.app import App, on
+from textual.widgets import Header, Footer, Button, Label, DataTable, Static, Input
 from textual.containers import Grid, Horizontal, Vertical
 from textual.screen import Screen
 
@@ -15,7 +15,7 @@ class NotesApp(App):
                 ("a", "add", "Add New"),
                 ("d", "delete", "Delete"),
                 ("c", "clear_all", "Clear All")]
-    
+
     def __init__(self, db):
         super().__init__()
         self.db = db
@@ -53,6 +53,18 @@ class NotesApp(App):
             note_id, *note = data
             notes_list.add_row(*note, key=note_id)
 
+    @on(Button.Pressed, "#add")
+    def action_add(self):
+        '''Function for adding a new note'''
+
+        def check_note(data):
+            if data:
+                self.db.add_new_note(data)
+                note_id, *note = self.db.get_last_note()
+                self.query_one(DataTable).add_row(*note, key=note_id)
+
+        self.push_screen(InputDialog(), check_note)
+
     def action_toggle_dark(self):
         self.dark = not self.dark
 
@@ -61,6 +73,42 @@ class NotesApp(App):
             if accepted:
                 self.exit()
         self.push_screen(ExitDialog("Do you want to quit?", check_answer))
+
+
+class InputDialog(Screen):
+    '''Dialog screen for new notes'''
+
+    def compose(self):
+        yield Grid(
+            Label("Add Note", id="title"),
+            Label("Name:", classes="label"),
+            Input(
+                placeholder="Note Title",
+                classes="input",
+                id="note",
+            ),
+            Label("Text:", classes="label"),
+            Input(
+                placeholder="Input text",
+                classes="input",
+                id="text",
+            ),
+
+            Static(),
+            Button("Cancel", variant="warning", id="cancel"),
+            Button("Ok", variant="success", id="ok"),
+            id="input-dialog",
+        )
+
+    def on_button_pressed(self, event):
+        '''Dialog for adding new notes'''
+
+        if event.button.id == "ok":
+            title = self.query_one("#note", Input).value
+            text = self.query_one("#text", Input).value
+            self.dismiss((title, text))
+        else:
+            self.dismiss(())
 
 
 class ExitDialog(Screen):
