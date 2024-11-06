@@ -55,19 +55,35 @@ class NotesApp(App):
 
     @on(Button.Pressed, "#add")
     def action_add(self):
-        '''Function for adding a new note'''
+        '''Add a new note'''
 
         def check_note(data):
             if data:
                 self.db.add_new_note(data)
                 note_id, *note = self.db.get_last_note()
                 self.query_one(DataTable).add_row(*note, key=note_id)
-
         self.push_screen(InputDialog(), check_note)
+
+    @on(Button.Pressed, "#delete")
+    def action_delete(self):
+        '''Delete a single note'''
+        notes_list = self.query_one(DataTable)
+        row_key, _ = notes_list.coordinate_to_cell_key(notes_list.cursor_coordinate)
+
+        def check_answer(accepted):
+            if accepted and row_key:
+                self.db.delete_note(note_id=row_key.value)
+                notes_list.remove_row(row_key)
+
+        note_title = notes_list.get_row(row_key)[0]
+        self.push_screen(
+            ExitDialog(f"Do you want to delete {note_title}?"), check_answer
+        )
 
     def action_toggle_dark(self):
         self.dark = not self.dark
 
+    #// FIXME - #@on(Button.Pressed, "#request_quit") - fix exit
     def action_request_quit(self):
         def check_answer(accepted):
             if accepted:
