@@ -1,4 +1,4 @@
-ExitDialog {
+QuestionDialog {
     align: center middle;
 }
 

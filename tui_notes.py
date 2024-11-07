@@ -33,7 +33,7 @@ class NotesApp(App):
             Button("Add", variant="success", id="add"),
             Button("Delete", variant="warning", id="delete"),
             Static(classes="separator"),
-            Button("Clear All", variant="error", id="clear"),
+            Button("Clear All", variant="error", id="clear_all"),
             classes="button-panel"
         )
 
@@ -67,6 +67,7 @@ class NotesApp(App):
     @on(Button.Pressed, "#delete")
     def action_delete(self):
         '''Delete a single note'''
+
         notes_list = self.query_one(DataTable)
         row_key, _ = notes_list.coordinate_to_cell_key(notes_list.cursor_coordinate)
 
@@ -77,18 +78,34 @@ class NotesApp(App):
 
         note_title = notes_list.get_row(row_key)[0]
         self.push_screen(
-            ExitDialog(f"Do you want to delete {note_title}?"), check_answer
+            QuestionDialog(f"Do you want to delete {note_title}?"), check_answer
+        )
+
+    @on(Button.Pressed, "#clear_all")
+    def action_delete_all(self):
+        '''Remove all notes from the database and the app'''
+
+        def check_answer(accepted):
+            if accepted:
+                self.db.clear_all_notes()
+                self.query_one(DataTable).clear()
+
+        self.push_screen(
+            QuestionDialog("Do you want to remove all notes?", check_answer)
         )
 
     def action_toggle_dark(self):
         self.dark = not self.dark
 
-    #// FIXME - #@on(Button.Pressed, "#request_quit") - fix exit
+    @on(Button.Pressed, "#request_quit")
     def action_request_quit(self):
+        '''Quit application'''
+
         def check_answer(accepted):
             if accepted:
                 self.exit()
-        self.push_screen(ExitDialog("Do you want to quit?", check_answer))
+
+        self.push_screen(QuestionDialog("Do you want to quit?", check_answer))
 
 
 class InputDialog(Screen):
@@ -127,8 +144,8 @@ class InputDialog(Screen):
             self.dismiss(())
 
 
-class ExitDialog(Screen):
-    '''Prompts dialog to leave the app'''
+class QuestionDialog(Screen):
+    '''Prompts a confirmation dialog'''
 
     def __init__(self, message, *args, **kwargs):
         super().__init__(*args, **kwargs)
