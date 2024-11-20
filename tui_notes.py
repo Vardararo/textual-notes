@@ -91,7 +91,7 @@ class NotesApp(App):
                 self.query_one(DataTable).clear()
 
         self.push_screen(
-            QuestionDialog("Do you want to remove all notes?", check_answer)
+            QuestionDialog("Do you want to remove all notes?"), check_answer
         )
 
     def action_toggle_dark(self):
@@ -105,8 +105,7 @@ class NotesApp(App):
             if accepted:
                 self.exit()
 
-        self.push_screen(QuestionDialog("Do you want to quit?", check_answer))
-
+        self.push_screen(QuestionDialog("Do you want to quit?"), check_answer)
 
 class InputDialog(Screen):
     '''Dialog screen for new notes'''

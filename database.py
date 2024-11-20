@@ -6,6 +6,8 @@ import sqlite3
 DATABASE_PATH = pathlib.Path().home() / "notes.db"
 
 class Database:
+    '''Database for the Notes application'''
+
     def __init__(self, db_path=DATABASE_PATH):
         self.db = sqlite3.connect(db_path)
         self.cursor = self.db.cursor()
