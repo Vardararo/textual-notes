@@ -83,7 +83,7 @@ class NotesApp(App):
         )
 
     @on(Button.Pressed, "#clear_all")
-    def action_delete_all(self):
+    def action_clear_all(self):
         '''Remove all notes from the database and the app'''
 
         def check_answer(accepted):
