@@ -19,6 +19,7 @@ class NotesApp(App):
     def __init__(self, db):
         super().__init__()
         self.db = db
+        self.theme = "nord"
 
     def compose(self):
         yield Header()
@@ -95,7 +96,10 @@ class NotesApp(App):
         )
 
     def action_toggle_dark(self):
-        self.dark = not self.dark
+        """An action to toggle dark mode."""
+        self.theme = (
+            "nord" if self.theme == "solarized-light" else "solarized-light"
+        )
 
     @on(Button.Pressed, "#request_quit")
     def action_request_quit(self):
