@@ -4,6 +4,7 @@ from textual.app import App, on
 from textual.widgets import Header, Footer, Button, Label, DataTable, Static, Input
 from textual.containers import Grid, Horizontal, Vertical
 from textual.screen import Screen
+from textual.widgets.data_table import CellDoesNotExist
 
 
 class NotesApp(App):
@@ -69,18 +70,26 @@ class NotesApp(App):
     def action_delete(self):
         '''Delete a single note'''
 
-        notes_list = self.query_one(DataTable)
-        row_key, _ = notes_list.coordinate_to_cell_key(notes_list.cursor_coordinate)
+        try:
+            notes_list = self.query_one(DataTable)
+            row_key, _ = notes_list.coordinate_to_cell_key(notes_list.cursor_coordinate)
 
-        def check_answer(accepted):
-            if accepted and row_key:
-                self.db.delete_note(note_id=row_key.value)
-                notes_list.remove_row(row_key)
+            def check_answer(accepted):
+                if accepted and row_key:
+                    self.db.delete_note(note_id=row_key.value)
+                    notes_list.remove_row(row_key)
 
-        note_title = notes_list.get_row(row_key)[0]
-        self.push_screen(
-            QuestionDialog(f"Do you want to delete {note_title}?"), check_answer
+            note_title = notes_list.get_row(row_key)[0]
+
+        except CellDoesNotExist:
+            self.push_screen(
+            ErrorDialog("Nothing to delete!")
         )
+
+        else:
+            self.push_screen(
+                QuestionDialog(f"Do you want to delete {note_title}?"), check_answer
+            )
 
     @on(Button.Pressed, "#clear_all")
     def action_clear_all(self):
@@ -146,7 +155,6 @@ class InputDialog(Screen):
         else:
             self.dismiss(())
 
-
 class QuestionDialog(Screen):
     '''Prompts a confirmation dialog'''
 
@@ -168,4 +176,23 @@ class QuestionDialog(Screen):
             self.dismiss(True)
         else:
             self.dismiss(False)
+
+class ErrorDialog(Screen):
+    '''Prompts an error dialog'''
+
+    def __init__(self, message, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.message = message
+
+    def compose(self):
+        yield Grid(
+            Label(self.message, id="question"),
+            Button("OK", variant="primary", id="err_btn", classes="centered-button"), 
+            id="error-dialog",
+        )
+
+    def on_button_pressed(self, event):
+        """Press to dismiss the message"""
+        if event.button.id == "err_btn":
+            self.dismiss()
 # End-of-file (EOF)
